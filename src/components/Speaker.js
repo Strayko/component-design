@@ -32,11 +32,25 @@ const Sessions = () => {
     );
 }
 
+const ImageWithFallback = ({src, ...props}) => {
+    const [error, setError] = useState(false);
+    const [imgSrc, setImgSrc] = useState(src);
+
+    function onError() {
+        if(!error) {
+            setImgSrc("/images/speaker-99999.jpg");
+            setError(true);
+        }
+    }
+
+    return <img src={imgSrc} {...props} onError={onError} />
+}
+
 const SpeakerImage = () => {
     const {speaker: {id, first, last} } = useContext(SpeakerContext);
     return (
         <div className="speaker-img d-flex flex-row justify-content-center align-items-center h-300">
-            <img
+            <ImageWithFallback
                 className="contain-fit"
                 src={`/images/speaker-${id}.jpg`}
                 width="300"
@@ -66,9 +80,9 @@ const SpeakerFavorite = () => {
         }}>
             <i className={speaker.favorite === true ? "fa fa-star orange" : "fa fa-star-o orange"}/>{" "}
             Favorite{" "}
-            {inTransition ? (
-                <span className="fas fa-circle-notch fa-spin"></span>
-            ) : null}
+            {/*{inTransition ? (*/}
+            {/*    <span className="fas fa-circle-notch fa-spin"></span>*/}
+            {/*) : null}*/}
         </span>
         </div>
     );
