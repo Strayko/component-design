@@ -1,7 +1,8 @@
-import {useContext, useState} from "react";
+import {useContext, useState, memo} from "react";
 import {SpeakerFilterContext} from "../contexts/SpeakerFilterContext";
 import {SpeakerProvider, SpeakerContext} from "../contexts/SpeakerContext";
 import SpeakerDelete from "./SpeakerDelete";
+import ErrorBoundary from "./ErrorBoundary";
 
 const Session = ({title, room}) => {
     return (
@@ -90,7 +91,7 @@ const SpeakerFavorite = () => {
 
 const SpeakerDemographics = () => {
     const {speaker} = useContext(SpeakerContext);
-    const {first, last, bio, company, twitterHandle, favorite} = speaker;
+    const {first, last, bio, company, twitterHandle} = speaker;
 
     return (
         <div className="speaker-info">
@@ -102,7 +103,7 @@ const SpeakerDemographics = () => {
             <SpeakerFavorite />
             <div>
                 <p className="card-description">
-                    {bio}
+                    {bio.substring(0,70)}
                 </p>
                 <div className="social d-flex flex-row mt-4">
                     <div className="company">
@@ -119,8 +120,20 @@ const SpeakerDemographics = () => {
     );
 }
 
-const Speaker = ({speaker, updateRecord, insertRecord, deleteRecord}) => {
+const SpeakerNoErrorBoundary = memo(({speaker, updateRecord, insertRecord, deleteRecord, showErrorCard}) => {
     const {showSessions} = useContext(SpeakerFilterContext);
+
+    if(showErrorCard) {
+        return (
+            <div className="col-xs-12 col-sm-12 col-md-6 col-lg-4 col-sm-12 col-xs-12">
+                <div className="card card-height p-4 mt-4">
+                    <img src="/images/speaker-99999.jpg"/>
+                    <div><b>Error Showing Speaker</b></div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <SpeakerProvider speaker={speaker} updateRecord={updateRecord}
              insertRecord={insertRecord} deleteRecord={deleteRecord}>
@@ -134,6 +147,20 @@ const Speaker = ({speaker, updateRecord, insertRecord, deleteRecord}) => {
             </div>
         </SpeakerProvider>
     );
+}, areEqualSpeaker);
+
+const Speaker = (props) => {
+    return (
+        <ErrorBoundary errorUI={<SpeakerNoErrorBoundary {...props} showErrorCard={true}>
+
+        </SpeakerNoErrorBoundary>}>
+            <SpeakerNoErrorBoundary {...props}/>
+        </ErrorBoundary>
+    );
+}
+
+function areEqualSpeaker(prevProps, nextProps) {
+    return (prevProps.speaker.favorite === nextProps.speaker.favorite);
 }
 
 export default Speaker;
